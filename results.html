@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAUTIO - Your Cyber Awareness Report</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body class="results-page">
+    <div class="stars"></div>
+    <div class="results-container">
+
+        <header class="results-header">
+            <h1 class="logo">CAUTIO</h1>
+            <p class="results-subtitle">Cyber Awareness Report</p>
+        </header>
+
+        <!-- Agent card -->
+        <div class="agent-card">
+            <div class="agent-avatar" id="agentAvatar">🛡️</div>
+            <div class="agent-info">
+                <div class="agent-name" id="agentName">Agent</div>
+                <div class="agent-date" id="agentDate"></div>
+            </div>
+            <div class="level-badge" id="levelBadge">
+                <div class="level-icon" id="levelIcon">⭐</div>
+                <div class="level-text" id="levelText">CALCULATING...</div>
+            </div>
+        </div>
+
+        <!-- Level description -->
+        <div class="level-description-card" id="levelDescCard">
+            <p id="levelDesc"></p>
+        </div>
+
+        <!-- Scores grid -->
+        <div class="scores-grid">
+            <div class="score-card runner-score-card" id="runnerCard">
+                <div class="score-card-header">
+                    <span class="score-card-icon">🏃‍♂️</span>
+                    <span class="score-card-title">Runner Mode</span>
+                </div>
+                <div class="score-card-body" id="runnerBody">
+                    <div class="big-score" id="runnerScore">—</div>
+                    <div class="score-details" id="runnerDetails"></div>
+                </div>
+                <div class="score-card-footer" id="runnerFooter"></div>
+            </div>
+
+            <div class="score-card quiz-score-card" id="quizCard">
+                <div class="score-card-header">
+                    <span class="score-card-icon">🧠</span>
+                    <span class="score-card-title">Quiz Mode</span>
+                </div>
+                <div class="score-card-body" id="quizBody">
+                    <div class="big-score" id="quizScore">—</div>
+                    <div class="score-details" id="quizDetails"></div>
+                </div>
+                <div class="score-card-footer" id="quizFooter"></div>
+            </div>
+        </div>
+
+        <!-- Combined score bar -->
+        <div class="combined-bar-card" id="combinedBarCard">
+            <div class="combined-bar-label">Overall Cyber Awareness Score</div>
+            <div class="combined-bar-track">
+                <div class="combined-bar-fill" id="combinedBarFill"></div>
+                <div class="combined-bar-pct" id="combinedBarPct">0%</div>
+            </div>
+            <div class="combined-bar-zones">
+                <span>Beginner</span><span>Medium</span><span>Expert</span>
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="tips-card" id="tipsCard">
+            <h3>💡 Key Takeaways</h3>
+            <ul class="tips-list" id="tipsList"></ul>
+        </div>
+
+        <!-- Actions -->
+        <div class="results-actions">
+            <button class="action-btn runner-btn" onclick="window.location.href='runner.html'">Play Runner Again</button>
+            <button class="action-btn quiz-btn"   onclick="window.location.href='quiz.html'">Retake Quiz</button>
+            <button class="action-btn menu-btn"   onclick="window.location.href='index.html'">Main Menu</button>
+        </div>
+
+    </div>
+
+    <script>
+    const username     = localStorage.getItem('cautio-username') || 'Agent';
+    const runnerResult = JSON.parse(localStorage.getItem('cautio-runner-result') || 'null');
+    const quizResult   = JSON.parse(localStorage.getItem('cautio-quiz-result')   || 'null');
+
+    function calcLevel(combinedPct) {
+        if (combinedPct >= 70) return {
+            label: 'EXPERT', icon: '🏆', color: '#00ff41', shadow: '#00ff41',
+            desc: `Excellent work, ${username}! You demonstrate strong cybersecurity awareness. You can identify threats, apply best practices, and make smart security decisions. Keep sharpening your skills — the cyber world keeps evolving.`
+        };
+        if (combinedPct >= 40) return {
+            label: 'MEDIUM', icon: '⭐', color: '#ffaa00', shadow: '#ffaa00',
+            desc: `Good effort, ${username}! You have a solid foundation in cybersecurity but there are areas to strengthen. Review phishing detection, password management, and safe browsing to level up your defenses.`
+        };
+        return {
+            label: 'BEGINNER', icon: '🌱', color: '#ff6644', shadow: '#ff6644',
+            desc: `Keep going, ${username}! Everyone starts somewhere. Your cybersecurity journey is just beginning. Focus on recognizing common threats like phishing, safe password habits, and avoiding risky links to build a strong foundation.`
+        };
+    }
+
+    const ALL_TIPS = [
+        'Never click links in unsolicited emails — always go directly to websites.',
+        'Use a unique, strong password for every account. Consider a password manager.',
+        'Enable two-factor authentication (2FA) on all important accounts.',
+        'Keep your software and operating system updated to patch vulnerabilities.',
+        'Avoid using public Wi-Fi for sensitive activities without a VPN.',
+        'Be suspicious of urgent requests for personal information — legitimate services won\'t rush you.',
+        'Always verify the sender\'s email address before trusting any message.',
+        'Back up your data regularly to protect against ransomware attacks.',
+        'Lock your devices when leaving them unattended, even briefly.',
+        'Think before you share — oversharing personal info online can enable social engineering.'
+    ];
+
+    function pickTips(pct) {
+        if (pct >= 70) return ALL_TIPS.slice(0, 3);
+        if (pct >= 40) return ALL_TIPS.slice(2, 6);
+        return ALL_TIPS.slice(0, 6);
+    }
+
+    function getCombinedPct() {
+        const pcts = [];
+        if (runnerResult && runnerResult.total > 0)
+            pcts.push((runnerResult.correct / runnerResult.total) * 100);
+        if (quizResult)
+            pcts.push(quizResult.percentage);
+        if (!pcts.length) return 0;
+        return Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length);
+    }
+
+    function render() {
+        const combinedPct = getCombinedPct();
+        const level       = calcLevel(combinedPct);
+
+        document.getElementById('agentName').textContent = username;
+        document.getElementById('agentDate').textContent = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+
+        const badge = document.getElementById('levelBadge');
+        badge.style.borderColor = level.color;
+        badge.style.boxShadow   = `0 0 20px ${level.shadow}44`;
+        document.getElementById('levelText').textContent  = level.label;
+        document.getElementById('levelText').style.color  = level.color;
+        document.getElementById('levelIcon').textContent  = level.icon;
+
+        document.getElementById('levelDesc').textContent         = level.desc;
+        document.getElementById('levelDescCard').style.borderColor = level.color + '55';
+        document.getElementById('levelDescCard').style.background  = level.color + '11';
+
+        if (runnerResult) {
+            document.getElementById('runnerScore').textContent   = runnerResult.score.toLocaleString();
+            document.getElementById('runnerDetails').innerHTML   =
+                `<span>Distance: <b>${runnerResult.distance}km</b></span>` +
+                `<span>Questions: <b>${runnerResult.correct}/${runnerResult.total}</b> correct</span>`;
+            const rPct = runnerResult.total > 0 ? Math.round(runnerResult.correct/runnerResult.total*100) : 0;
+            document.getElementById('runnerFooter').textContent  = `Answer accuracy: ${rPct}%`;
+        } else {
+            document.getElementById('runnerScore').textContent  = 'Not Played';
+            document.getElementById('runnerBody').style.opacity = '0.45';
+        }
+
+        if (quizResult) {
+            document.getElementById('quizScore').textContent    = quizResult.percentage + '%';
+            document.getElementById('quizDetails').innerHTML    =
+                `<span>Points: <b>${quizResult.score}</b></span>` +
+                `<span>Correct: <b>${quizResult.correct}/${quizResult.total}</b></span>`;
+            document.getElementById('quizFooter').textContent   =
+                quizResult.percentage >= 70 ? '🏅 Well done!' : quizResult.percentage >= 40 ? '👍 Good effort' : '📚 Keep studying';
+        } else {
+            document.getElementById('quizScore').textContent   = 'Not Played';
+            document.getElementById('quizBody').style.opacity  = '0.45';
+        }
+
+        const barFill = document.getElementById('combinedBarFill');
+        barFill.style.background = level.color;
+        barFill.style.boxShadow  = `0 0 10px ${level.shadow}`;
+        document.getElementById('combinedBarPct').textContent = combinedPct + '%';
+        setTimeout(() => { barFill.style.width = combinedPct + '%'; }, 200);
+
+        document.getElementById('tipsList').innerHTML =
+            pickTips(combinedPct).map(t => `<li>${t}</li>`).join('');
+    }
+
+    function createStars() {
+        const sc = document.querySelector('.stars');
+        if (!sc) return;
+        for (let i = 0; i < 80; i++) {
+            const s = document.createElement('div');
+            s.className = 'star';
+            s.style.left              = Math.random() * 100 + '%';
+            s.style.top               = Math.random() * 100 + '%';
+            s.style.animationDelay    = Math.random() * 3 + 's';
+            s.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            sc.appendChild(s);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        createStars();
+        render();
+    });
+    </script>
+</body>
+</html>

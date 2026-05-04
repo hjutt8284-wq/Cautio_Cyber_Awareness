@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAUTIO - Cybersecurity Awareness</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        .difficulty-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.88);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .difficulty-overlay.visible { display: flex; }
+        .difficulty-card {
+            background: linear-gradient(135deg, #0d0d1f, #1a1a2e);
+            border: 2px solid #00ffff66;
+            border-radius: 20px;
+            padding: 40px 50px;
+            text-align: center;
+            max-width: 520px;
+            width: 90%;
+            box-shadow: 0 0 60px #00ffff22, 0 0 120px #8a2be211;
+            animation: diffIn 0.32s ease;
+        }
+        @keyframes diffIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+        .difficulty-card h2 {
+            font-size: 1.6rem; color: #00ffff; margin-bottom: 8px;
+            text-shadow: 0 0 16px #00ffff88;
+        }
+        .difficulty-card > p {
+            color: #888; font-family: sans-serif; font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+        .diff-options {
+            display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+        }
+        .diff-btn {
+            flex: 1; min-width: 120px;
+            border: 2px solid transparent;
+            border-radius: 14px;
+            padding: 20px 14px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            transition: transform 0.15s, box-shadow 0.15s;
+            background: none;
+        }
+        .diff-easy  { background: linear-gradient(135deg,#003322,#004433); border-color:#00ff41; color:#00ff41; }
+        .diff-easy:hover  { transform: translateY(-4px); box-shadow: 0 0 28px #00ff4166; }
+        .diff-medium{ background: linear-gradient(135deg,#332200,#443300); border-color:#ffaa00; color:#ffaa00; }
+        .diff-medium:hover{ transform: translateY(-4px); box-shadow: 0 0 28px #ffaa0066; }
+        .diff-hard  { background: linear-gradient(135deg,#330010,#440020); border-color:#ff2244; color:#ff2244; }
+        .diff-hard:hover  { transform: translateY(-4px); box-shadow: 0 0 28px #ff224466; }
+        .diff-btn .diff-label { display: block; font-size: 1.1rem; margin-bottom: 6px; }
+        .diff-btn .diff-speed { display: block; font-size: 0.78rem; opacity: 0.8; font-weight: 400; letter-spacing: 0; }
+        .diff-cancel {
+            margin-top: 20px;
+            background: transparent; border: 1px solid #ffffff22;
+            border-radius: 8px; color: #666; cursor: pointer;
+            font-family: 'Orbitron', sans-serif; font-size: 0.8rem;
+            padding: 10px 24px;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .diff-cancel:hover { border-color: #ffffff55; color: #aaa; }
+    </style>
+</head>
+<body class="main-menu">
+    <div class="stars"></div>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">CAUTIO</h1>
+            <div class="logo-subtitle">Cybersecurity Awareness Training</div>
+        </header>
+
+        <main class="main-content">
+            <section class="name-entry" id="nameEntry">
+                <div class="name-card">
+                    <div class="name-icon">🛡️</div>
+                    <h2>Welcome, Agent</h2>
+                    <p>Enter your name to begin your cybersecurity awareness training.</p>
+                    <div class="name-input-group">
+                        <input type="text" id="playerNameInput" class="name-input"
+                               placeholder="Enter your name..." maxlength="24" autocomplete="off" />
+                        <button class="name-submit-btn" onclick="submitName()">START TRAINING →</button>
+                    </div>
+                    <div class="name-error" id="nameError"></div>
+                </div>
+            </section>
+
+            <section class="intro" id="introSection" style="display:none;">
+                <h2>Ready, <span id="welcomeName" class="highlight-name"></span>!</h2>
+                <p>Choose a training mode. Complete both for a full cyber awareness report.</p>
+            </section>
+
+            <section class="game-modes" id="gameModesSection" style="display:none;">
+                <div class="mode-card runner-card">
+                    <div class="mode-icon">🏃‍♂️</div>
+                    <h3>Runner Mode</h3>
+                    <p>Race through a cyber-threat highway. Dodge obstacles, stop at signals, and answer security questions to score points!</p>
+                    <button class="mode-btn runner-btn" onclick="startRunnerMode()">
+                        <span>Play Runner Mode</span>
+                    </button>
+                </div>
+
+                <div class="mode-card quiz-card">
+                    <div class="mode-icon">🧠</div>
+                    <h3>Quiz Mode</h3>
+                    <p>15-second timed questions. Challenge yourself on modern threats, best practices, and security protocols.</p>
+                    <button class="mode-btn quiz-btn" onclick="startQuizMode()">
+                        <span>Take Quiz Test</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="stats" id="statsSection" style="display:none;">
+                <div class="stat-item">
+                    <div class="stat-value" id="best-runner-score">0</div>
+                    <div class="stat-label">Best Runner Score</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="best-quiz-score">0%</div>
+                    <div class="stat-label">Best Quiz Score</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-distance">0km</div>
+                    <div class="stat-label">Total Distance</div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2026 CAUTIO - Building Cybersecurity Awareness</p>
+        </footer>
+    </div>
+
+    <!-- Difficulty selection modal -->
+    <div class="difficulty-overlay" id="difficultyOverlay">
+        <div class="difficulty-card">
+            <h2>🏁 Select Difficulty</h2>
+            <p>Choose how fast the highway moves. Try a harder level once you master the basics!</p>
+            <div class="diff-options">
+                <button class="diff-btn diff-easy" onclick="pickDifficulty('Easy')">
+                    <span class="diff-label">EASY</span>
+                    <span class="diff-speed">72 km/h</span>
+                </button>
+                <button class="diff-btn diff-medium" onclick="pickDifficulty('Medium')">
+                    <span class="diff-label">MEDIUM</span>
+                    <span class="diff-speed">240 km/h</span>
+                </button>
+                <button class="diff-btn diff-hard" onclick="pickDifficulty('Hard')">
+                    <span class="diff-label">HARD</span>
+                    <span class="diff-speed">320 km/h</span>
+                </button>
+            </div>
+            <button class="diff-cancel" onclick="closeDifficultyModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        function submitName() {
+            const input = document.getElementById('playerNameInput');
+            const name = input.value.trim();
+            if (!name) {
+                document.getElementById('nameError').textContent = 'Please enter your name to continue.';
+                input.focus();
+                return;
+            }
+            document.getElementById('nameError').textContent = '';
+            localStorage.setItem('cautio-username', name);
+            localStorage.removeItem('cautio-runner-result');
+            localStorage.removeItem('cautio-quiz-result');
+
+            document.getElementById('nameEntry').style.display = 'none';
+            document.getElementById('introSection').style.display = 'block';
+            document.getElementById('gameModesSection').style.display = 'flex';
+            document.getElementById('statsSection').style.display = 'flex';
+            document.getElementById('welcomeName').textContent = name;
+            loadStats();
+        }
+
+        function loadStats() {
+            const bestRunnerScore = localStorage.getItem('cautio-best-runner') || '0';
+            const bestQuizScore   = localStorage.getItem('cautio-best-quiz-score') || '0';
+            const totalDistance   = localStorage.getItem('cautio-total-distance') || '0';
+            document.getElementById('best-runner-score').textContent = bestRunnerScore;
+            document.getElementById('best-quiz-score').textContent   = bestQuizScore + '%';
+            document.getElementById('total-distance').textContent    = totalDistance + 'km';
+        }
+
+        function startRunnerMode() {
+            document.getElementById('difficultyOverlay').classList.add('visible');
+        }
+
+        function closeDifficultyModal() {
+            document.getElementById('difficultyOverlay').classList.remove('visible');
+        }
+
+        function pickDifficulty(level) {
+            localStorage.setItem('cautio-difficulty', level);
+            window.location.href = 'runner.html';
+        }
+
+        function startQuizMode() {
+            window.location.href = 'quiz.html';
+        }
+
+        function createStars() {
+            const sc = document.querySelector('.stars');
+            for (let i = 0; i < 100; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top  = Math.random() * 100 + '%';
+                s.style.animationDelay    = Math.random() * 3 + 's';
+                s.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                sc.appendChild(s);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            const saved = localStorage.getItem('cautio-username');
+            if (saved) {
+                document.getElementById('playerNameInput').value = saved;
+            }
+            document.getElementById('playerNameInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter') submitName();
+            });
+            document.getElementById('difficultyOverlay').addEventListener('click', e => {
+                if (e.target === document.getElementById('difficultyOverlay')) closeDifficultyModal();
+            });
+        });
+    </script>
+</body>
+</html>
